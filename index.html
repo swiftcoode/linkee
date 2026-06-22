@@ -2,81 +2,590 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>linkee.at</title>
   <style>
-    body { background: #111113; font-family: system-ui, sans-serif; color: #ddd; padding: 2rem 1.5rem; }
-    .header { margin-bottom: 2rem; }
-    .search-bar { display: flex; align-items: center; gap: 8px; background: #1a1a1c; border: 0.5px solid #2e2e30; border-radius: 10px; padding: 8px 12px; margin-bottom: 1.5rem; }
-    .search-bar input { background: none; border: none; outline: none; color: #ccc; width: 100%; }
-    .section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: #555; text-transform: uppercase; margin: 20px 0 10px 0; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-    .card { background: #1a1a1c; border: 0.5px solid #2e2e30; border-radius: 12px; padding: 1rem; text-decoration: none; display: flex; flex-direction: column; gap: 10px; }
-    .card:hover { background: #202024; }
-    .icon-wrap { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-    .card-name { font-size: 14px; font-weight: 500; color: #ddd; }
-    .card-desc { font-size: 12px; color: #666; }
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #2a2a32;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #e8e8ea;
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      margin-bottom: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .header-left h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      text-shadow: 0 4px 30px rgba(240, 160, 96, 0.15);
+    }
+
+    /* ===== TITRE AVEC DEUX COULEURS ===== */
+    .title-link {
+      background: linear-gradient(135deg, #f0c060, #f0a060);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .title-eeat {
+      background: linear-gradient(135deg, #60d0a0, #6090e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: #9999bb;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      margin-left: 4px;
+    }
+
+    /* ===== SEARCH BAR ===== */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #33333c;
+      border: 0.5px solid #44444e;
+      border-radius: 14px;
+      padding: 12px 20px;
+      margin-bottom: 2rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .search-bar:focus-within {
+      border-color: #f0a060;
+      box-shadow: 0 0 0 3px rgba(240, 160, 96, 0.15);
+    }
+
+    .search-bar span {
+      color: #66667a;
+      font-size: 1.2rem;
+    }
+
+    .search-bar input {
+      background: none;
+      border: none;
+      outline: none;
+      color: #d4d4dc;
+      width: 100%;
+      font-size: 1.05rem;
+      font-weight: 400;
+    }
+
+    .search-bar input::placeholder {
+      color: #5a5a6e;
+      font-weight: 300;
+    }
+
+    #clearBtn {
+      cursor: pointer;
+      color: #66667a;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+      display: none;
+    }
+    #clearBtn:hover { color: #f0a060; }
+
+    /* ===== STATS ===== */
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      font-size: 0.85rem;
+      color: #6a6a7e;
+      border-bottom: 0.5px solid #3a3a44;
+      padding-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .stats span {
+      background: #33333c;
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      border: 0.5px solid #3a3a44;
+    }
+
+    #resultCount { color: #f0c060; }
+    #sectionCount { color: #6090e0; }
+
+    /* ===== SECTION LABEL ===== */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 28px 0 12px 0;
+      padding-left: 14px;
+      border-left: 4px solid;
+      position: relative;
+    }
+
+    /* ===== GRID ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      border-radius: 16px;
+      padding: 0;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid transparent;
+    }
+
+    /* ===== VIGNETTE TOTALE EN COULEUR ===== */
+    .card-thumbnail {
+      width: 100%;
+      height: 120px;
+      position: relative;
+      overflow: hidden;
+      background: var(--card-color, #444);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    /* Effet de lumière */
+    .card-thumbnail::before {
+      content: '';
+      position: absolute;
+      top: -60%;
+      right: -40%;
+      width: 150%;
+      height: 200%;
+      background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Effet de brillance au survol */
+    .card-thumbnail::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, transparent 60%);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .card:hover .card-thumbnail::after {
+      opacity: 1;
+    }
+
+    .card-thumbnail .big-icon {
+      font-size: 3.2rem;
+      filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover .card-thumbnail .big-icon {
+      transform: scale(1.15) rotate(-6deg);
+    }
+
+    /* Nom sur la vignette */
+    .card-thumbnail .thumbnail-name {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.95);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+      z-index: 1;
+      letter-spacing: 0.02em;
+      background: rgba(0,0,0,0.25);
+      backdrop-filter: blur(4px);
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 0.5px solid rgba(255,255,255,0.08);
+      white-space: nowrap;
+    }
+
+    /* ===== TAGS 4° ET 3° - FOND GRIS / ÉCRITURE BLANCHE ===== */
+    .card-tags {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .tag {
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(60, 60, 70, 0.85);
+      backdrop-filter: blur(8px);
+      border: 0.5px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* ===== CONTENU DE LA CARTE - EN COULEUR ===== */
+    .card-content {
+      padding: 1rem 1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--card-color, #444);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    /* Assombrir légèrement le fond pour la lisibilité */
+    .card-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.25);
+      pointer-events: none;
+    }
+
+    .card-content > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.92);
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.3);
+    }
+
+    .card-url {
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 400;
+      word-break: break-all;
+      margin-top: 2px;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    /* Flèche d'indication */
+    .card-arrow {
+      position: absolute;
+      bottom: 10px;
+      right: 14px;
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+      z-index: 1;
+    }
+
+    .card:hover .card-arrow {
+      transform: translateX(4px);
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Effet hover global */
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      border-color: var(--card-color, #444);
+    }
+
+    .card:active {
+      transform: scale(0.97);
+    }
+
+    /* ===== COULEURS DES SECTIONS ===== */
+    .section-label[data-section="Niveaux"] { border-color: #f0c060; color: #f0c060; }
+    .section-label[data-section="Programmation"] { border-color: #60d0a0; color: #60d0a0; }
+    .section-label[data-section="Exercices"] { border-color: #e070b0; color: #e070b0; }
+    .section-label[data-section="Logiciels"] { border-color: #6090e0; color: #6090e0; }
+    .section-label[data-section="Outils"] { border-color: #d09060; color: #d09060; }
+    .section-label[data-section="Autres"] { border-color: #a0a0b0; color: #a0a0b0; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3.5rem 1rem;
+      color: #6a6a7e;
+      font-size: 0.95rem;
+      background: #33333c;
+      border-radius: 16px;
+      border: 1px dashed #3a3a44;
+    }
+
+    .empty-state span {
+      display: block;
+      font-size: 2.8rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .empty-state strong {
+      color: #f0a060;
+      font-weight: 500;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      body { padding: 1rem; }
+      .header-left h1 { font-size: 2.4rem; }
+      .header p { font-size: 0.95rem; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .card-thumbnail { height: 90px; }
+      .card-thumbnail .big-icon { font-size: 2.5rem; }
+      .card-thumbnail .thumbnail-name { font-size: 0.7rem; padding: 2px 10px; }
+      .card-content { padding: 0.8rem; }
+      .card-desc { font-size: 0.7rem; }
+      .tag { font-size: 0.45rem; padding: 2px 8px; }
+    }
+
+    @media (max-width: 400px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+      .header-left h1 { font-size: 1.8rem; }
+      .card-thumbnail { height: 75px; }
+      .card-thumbnail .big-icon { font-size: 2rem; }
+      .card-thumbnail .thumbnail-name { display: none; }
+      .card-content { padding: 0.6rem; }
+      .card-desc { font-size: 0.65rem; }
+      .card-url { display: none; }
+      .card-tags { top: 6px; left: 6px; }
+      .tag { font-size: 0.4rem; padding: 2px 6px; }
+    }
   </style>
 </head>
 <body>
 
+<div class="container">
+
+  <!-- HEADER -->
   <div class="header">
-    <h1>🔗 Linkee.at</h1>
-    <p>Accès aux ressources technologique</p>
+    <div class="header-left">
+      <h1>
+        <span class="title-link">🔗 link</span><span class="title-eeat">ee.at</span>
+      </h1>
+    </div>
+    <p>Bouquet de liens pour les cours de technologie</p>
   </div>
 
+  <!-- SEARCH -->
   <div class="search-bar">
     <span>🔍</span>
-    <input type="text" id="searchInput" placeholder="Rechercher..." oninput="render()" />
+    <input type="text" id="searchInput" placeholder="Rechercher un outil, un niveau, un nom…" autofocus />
+    <span id="clearBtn">✕</span>
   </div>
 
+  <!-- STATS -->
+  <div class="stats">
+    <span id="resultCount">0 ressource(s)</span>
+    <span id="sectionCount">0 section(s)</span>
+  </div>
+
+  <!-- RENDER -->
   <div id="app"></div>
 
-  <script>
-    // === LISTE DES LIENS (N'oubliez pas la virgule après chaque ligne sauf la dernière) ===
-    const data = [
-      { section: "NIVEAUX", name: "QUATRIEME", desc: "Moteur de recherche", url: "https://google.com", color: "#1e3a5f", icon: "🌐" },
-      { section: "NIVEAUX", name: "TROISIEME", desc: "Moteur de recherche", url: "https://google.com", color: "#1e3a5f", icon: "🌐" },
-      { section: "Programmation et Simulation", name: "Scratch", desc: "Programmation", url: "https://scratch.mit.edu/projects/editor/?tutorial=getStarted", color: "#1a2e1a", icon: "✅" },
-      { section: "Programmation et Simulation", name: "Vittasciences", desc: "Programmation et Simulation", url: "https://vittascience.com", color: "#1a2e3a", icon: "🧩" },
-      { section: "Programmation et Simulation", name: "CitizenCode", desc: "Programmation", url: "https://tinkercad.com", color: "#1a2e3a", icon: "🧩" },
-      { section: "Programmation et Simulation", name: "Tinkercad", desc: "Modélisation 3D", url: "https://tinkercad.com", color: "#1a2e3a", icon: "🧩" },
-      { section: "Exercices", name: "LearningApps", desc: "Exercices interactifs", url: "https://learningapps.org", color: "#3a2a1a", icon: "📝" },
-      { section: "Logiciels", name: "VS Code", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#007acc", icon: "💻" },
-      { section: "Niveau 3ème", name: "VS Code", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#007acc", icon: "💻" },
-      { section: "Niveau 4ème", name: "VS Code", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#007acc", icon: "💻" },
-      { section: "Outils", name: "Draw.io", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#007acc", icon: "💻" },
-      { section: "Outils", name: "Draw.io", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#007acc", icon: "💻" }
-    ];
+</div>
 
-    function render() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const app = document.getElementById('app');
-      app.innerHTML = "";
+<script>
+  // ============================================================
+  //  DONNÉES AVEC COULEURS UNIFORMES PAR RUBRIQUE
+  // ============================================================
+  const data = [
+    // ---- NIVEAUX (couleur : #f0c060) ----
+    { section: "Niveaux", name: "Quatrième", desc: "Moteur de recherche", url: "https://google.com", color: "#f0c060", icon: "🌐", bigIcon: "🌍", tags: ["4°"] },
+    { section: "Niveaux", name: "Troisième", desc: "Moteur de recherche", url: "https://google.com", color: "#f0c060", icon: "🌐", bigIcon: "🌍", tags: ["3°"] },
+    { section: "Niveaux", name: "VS Code", desc: "Éditeur de code (3ème)", url: "https://code.visualstudio.com", color: "#f0c060", icon: "💻", bigIcon: "💻", tags: ["3°"] },
+    { section: "Niveaux", name: "VS Code", desc: "Éditeur de code (4ème)", url: "https://code.visualstudio.com", color: "#f0c060", icon: "💻", bigIcon: "💻", tags: ["4°"] },
 
-      const sections = [...new Set(data.map(item => item.section))];
+    // ---- PROGRAMMATION (couleur : #60d0a0) ----
+    { section: "Programmation", name: "Scratch", desc: "Programmation visuelle", url: "https://scratch.mit.edu/projects/editor/?tutorial=getStarted", color: "#60d0a0", icon: "🐱", bigIcon: "🐱", tags: ["4°", "3°"] },
+    { section: "Programmation", name: "Vittasciences", desc: "Programmation & simulation", url: "https://vittascience.com", color: "#60d0a0", icon: "🧪", bigIcon: "🧪", tags: ["4°", "3°"] },
+    { section: "Programmation", name: "CitizenCode", desc: "Programmation", url: "https://citizencode.fr", color: "#60d0a0", icon: "🧩", bigIcon: "🧩", tags: ["4°", "3°"] },
+    { section: "Programmation", name: "Tinkercad", desc: "Modélisation 3D", url: "https://tinkercad.com", color: "#60d0a0", icon: "🔮", bigIcon: "🔮", tags: ["4°", "3°"] },
 
-      sections.forEach(secName => {
-        const filtered = data.filter(d => d.section === secName && d.name.toLowerCase().includes(query));
-        if (filtered.length === 0) return;
+    // ---- EXERCICES (couleur : #e070b0) ----
+    { section: "Exercices", name: "LearningApps", desc: "Exercices interactifs", url: "https://learningapps.org", color: "#e070b0", icon: "📝", bigIcon: "📝", tags: ["4°", "3°"] },
 
-        app.innerHTML += `<div class="section-label">${secName}</div><div class="grid"></div>`;
-        const grids = app.querySelectorAll('.grid');
-        const currentGrid = grids[grids.length - 1];
+    // ---- LOGICIELS (couleur : #6090e0) ----
+    { section: "Logiciels", name: "VS Code", desc: "Éditeur de code", url: "https://code.visualstudio.com", color: "#6090e0", icon: "💻", bigIcon: "💻", tags: ["4°", "3°"] },
 
-        filtered.forEach(item => {
-          currentGrid.innerHTML += `
-            <a class="card" href="${item.url}" target="_blank">
-              <div class="icon-wrap" style="background:${item.color}">${item.icon}</div>
-              <div>
-                <div class="card-name">${item.name}</div>
-                <div class="card-desc">${item.desc}</div>
-              </div>
-            </a>`;
-        });
-      });
+    // ---- OUTILS (couleur : #d09060) ----
+    { section: "Outils", name: "Draw.io", desc: "Diagrammes & schémas", url: "https://draw.io", color: "#d09060", icon: "📊", bigIcon: "📊", tags: ["4°", "3°"] },
+
+    // ---- AUTRES (couleur : #a0a0b0) ----
+    { section: "Autres", name: "Canva", desc: "Création graphique", url: "https://canva.com", color: "#a0a0b0", icon: "🎨", bigIcon: "🎨", tags: ["4°", "3°"] },
+    { section: "Autres", name: "ChatGPT", desc: "Assistant IA", url: "https://chat.openai.com", color: "#a0a0b0", icon: "🤖", bigIcon: "🤖", tags: ["4°", "3°"] },
+    { section: "Autres", name: "Notion", desc: "Prise de notes", url: "https://notion.so", color: "#a0a0b0", icon: "📓", bigIcon: "📓", tags: ["4°", "3°"] },
+  ];
+
+  // ============================================================
+  //  RENDU
+  // ============================================================
+  function render() {
+    const query = document.getElementById('searchInput').value.toLowerCase().trim();
+    const app = document.getElementById('app');
+    const resultCount = document.getElementById('resultCount');
+    const sectionCount = document.getElementById('sectionCount');
+    const clearBtn = document.getElementById('clearBtn');
+
+    clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+
+    const filtered = data.filter(item =>
+      item.name.toLowerCase().includes(query) ||
+      item.desc.toLowerCase().includes(query) ||
+      item.section.toLowerCase().includes(query) ||
+      (item.tags && item.tags.some(tag => tag.toLowerCase().includes(query)))
+    );
+
+    const sectionsSet = new Set(filtered.map(item => item.section));
+    const totalSections = sectionsSet.size;
+
+    resultCount.textContent = `${filtered.length} ressource${filtered.length > 1 ? 's' : ''}`;
+    sectionCount.textContent = `${totalSections} section${totalSections > 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      app.innerHTML = `
+        <div class="empty-state">
+          <span>🔎</span>
+          Aucune ressource trouvée pour "<strong>${query || '…'}</strong>"
+          <br /><small style="color:#4a4a5e;">Essayez un autre mot-clé</small>
+        </div>
+      `;
+      return;
     }
 
+    // Ordre personnalisé : Niveaux en premier, Autres en dernier
+    const sectionOrder = ["Niveaux", "Programmation", "Exercices", "Logiciels", "Outils", "Autres"];
+    const sections = sectionOrder.filter(sec => sectionsSet.has(sec));
+
+    app.innerHTML = '';
+
+    sections.forEach(secName => {
+      const items = filtered.filter(d => d.section === secName);
+
+      const label = document.createElement('div');
+      label.className = 'section-label';
+      label.dataset.section = secName;
+      label.textContent = secName;
+      app.appendChild(label);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      items.forEach(item => {
+        const card = document.createElement('a');
+        card.className = 'card';
+        card.href = item.url;
+        card.target = '_blank';
+        card.rel = 'noopener noreferrer';
+        card.style.setProperty('--card-color', item.color);
+
+        // Générer les tags HTML (fond gris / écriture blanche)
+        let tagsHTML = '';
+        if (item.tags && item.tags.length > 0) {
+          tagsHTML = '<div class="card-tags">';
+          item.tags.forEach(tag => {
+            tagsHTML += `<span class="tag">${tag}</span>`;
+          });
+          tagsHTML += '</div>';
+        }
+
+        // Extraire le nom de domaine
+        let domain = '';
+        try {
+          domain = new URL(item.url).hostname.replace('www.', '');
+        } catch {
+          domain = item.url;
+        }
+
+        card.innerHTML = `
+          <div class="card-thumbnail" style="background: ${item.color};">
+            ${tagsHTML}
+            <span class="big-icon">${item.bigIcon || item.icon}</span>
+            <span class="thumbnail-name">${item.name}</span>
+          </div>
+          <div class="card-content" style="background: ${item.color};">
+            <div class="card-desc">${item.icon} ${item.desc}</div>
+            <div class="card-url">${domain}</div>
+            <span class="card-arrow">→</span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      app.appendChild(grid);
+    });
+  }
+
+  // ============================================================
+  //  ÉVÉNEMENTS
+  // ============================================================
+  const searchInput = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('clearBtn');
+
+  searchInput.addEventListener('input', render);
+  clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.focus();
     render();
-  </script>
+  });
+
+  render();
+</script>
+
 </body>
 </html>
+
