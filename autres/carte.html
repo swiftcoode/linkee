@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cartes de vocabulaire</title>
+<style>
+:root{--bg:#f6f3ee;--sf:#fff;--tx:#231f2b;--mu:#675f73;--ac:#5b3fa0;--ac2:#ece6f7;--bd:#dcd5e6;--ok:#2b7a4b;--ko:#b3402f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17141d;--sf:#211d2b;--tx:#ece8f3;--mu:#aaa2b8;--ac:#b39bf0;--ac2:#2f2842;--bd:#3a3249;--ok:#6fd09a;--ko:#f08d7c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17141d;--sf:#211d2b;--tx:#ece8f3;--mu:#aaa2b8;--ac:#b39bf0;--ac2:#2f2842;--bd:#3a3249;--ok:#6fd09a;--ko:#f08d7c;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 Georgia,"Times New Roman",serif}
+main{max-width:620px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:0 0 12px}
+button,input,textarea{font:inherit}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button,.btn{font:600 .92rem system-ui,sans-serif;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:8px;padding:9px 14px;cursor:pointer}
+.tabs button[aria-pressed=true],.btn.p{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+.btn.ok{background:var(--ok);color:var(--bg);border-color:var(--ok)}
+.btn.ko{background:var(--ko);color:var(--bg);border-color:var(--ko)}
+.stats{display:flex;gap:16px;font:.9rem system-ui,sans-serif;color:var(--mu);margin-bottom:14px;flex-wrap:wrap}
+.stats b{color:var(--tx)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:28px 20px;text-align:center;margin-bottom:14px}
+.word{font-size:2rem;font-weight:700;margin:0 0 10px}
+.mu{color:var(--mu)}
+.def{font-size:1.1rem;margin:0 0 10px}
+.ex{font-style:italic;color:var(--mu);margin:0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+label{display:block;font:600 .9rem system-ui,sans-serif;margin:12px 0 4px}
+input,textarea{width:100%;box-sizing:border-box;background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:9px 10px}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--bd)}
+.item small{display:block;color:var(--mu)}
+.sec{margin-top:24px}
+.msg{font:.9rem system-ui,sans-serif;color:var(--ok);margin:8px 0 0;min-height:1.2em}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>Cartes de vocabulaire</h1>
+<div class="tabs" id="tabs"></div>
+<div class="stats" id="stats"></div>
+<div id="app"></div>
+</main>
+<script>
+var KEY="vocab-cards-v1",INT=[0,1,3,7,21],tab="rev",cards=[],flip=false,msg="";
+var START=[
+["pondérer","Tenir compte de plusieurs éléments en leur donnant leur juste poids.","Il faut pondérer ce résultat par le contexte de l’étude."],
+["nuancer","Rendre un propos moins tranché en y apportant des précisions.","Je voudrais nuancer ce constat : il ne vaut pas pour tous les cas."],
+["étayer","Appuyer une idée par des arguments ou des preuves.","Elle a étayé son propos avec trois exemples concrets."],
+["corroborer","Confirmer une affirmation par un élément supplémentaire.","Les chiffres de l’année dernière corroborent cette hypothèse."],
+["souligner","Mettre en évidence un point important.","Je tiens à souligner l’engagement de toute l’équipe."],
+["pertinent","Qui est approprié et en rapport direct avec le sujet.","Votre remarque est pertinente, elle éclaire la question."],
+["en revanche","Connecteur d’opposition : à l’inverse, par contre.","Le projet est ambitieux ; en revanche, son calendrier reste flou."],
+["par conséquent","Connecteur de conséquence : c’est pourquoi.","Les budgets sont gelés ; par conséquent, nous reportons l’achat."],
+["dans la mesure où","Connecteur de cause ou de condition : étant donné que.","Dans la mesure où tout le monde est présent, nous pouvons commencer."],
+["mettre en perspective","Replacer un fait dans un ensemble pour mieux le comprendre.","Mettons ces résultats en perspective avec ceux des trois dernières années."]
+];
+var BIG=[
+["appréhender","Comprendre, saisir mentalement.","Il faut appréhender la situation dans sa globalité."],
+["aborder","Traiter un sujet, commencer à l’examiner.","Nous aborderons ce point en fin de réunion."],
+["élucider","Rendre clair ce qui est obscur.","Il faut élucider les causes de ce retard."],
+["pallier","Remédier provisoirement à un manque.","Nous recrutons pour pallier l’absence de deux collègues."],
+["endiguer","Contenir la progression de quelque chose.","Ces mesures visent à endiguer la hausse des coûts."],
+["consolider","Rendre plus solide.","Ce partenariat consolide notre position."],
+["fédérer","Rassembler autour d’un projet commun.","Ce projet a su fédérer toute l’équipe."],
+["prôner","Recommander avec insistance.","Elle prône une approche plus collaborative."],
+["déplorer","Regretter vivement.","Nous déplorons le manque de moyens alloués."],
+["préconiser","Conseiller expressément.","Je préconise de commencer par un test à petite échelle."],
+["mettre en exergue","Mettre en évidence.","Ce rapport met en exergue trois priorités."],
+["occulter","Cacher, rendre moins visible.","Cet argument occulte le vrai problème."],
+["cerner","Définir avec précision.","Il faut d’abord cerner les besoins réels."],
+["hiérarchiser","Classer par ordre d’importance.","Hiérarchisons nos priorités avant de décider."],
+["réfuter","Démontrer qu’une idée est fausse.","Les données réfutent cette hypothèse."],
+["atténuer","Rendre moins fort ou moins grave.","Cet ajustement atténuera l’impact sur le planning."],
+["exacerber","Rendre plus vif, aggraver.","La pression exacerbe les tensions."],
+["stimuler","Encourager, donner de l’élan.","Ce dispositif stimule la participation."],
+["dissiper","Faire disparaître.","Je voudrais dissiper un malentendu."],
+["recouper","Vérifier une information en la comparant à d’autres.","Il faut recouper ces sources avant de conclure."],
+["conforter","Renforcer quelqu’un dans son opinion.","Ces résultats me confortent dans mon choix."],
+["entériner","Confirmer officiellement.","Le conseil a entériné cette décision."],
+["mutualiser","Mettre en commun.","Nous allons mutualiser nos ressources."],
+["s’en tenir à","Se limiter à.","Je m’en tiendrai à l’essentiel."],
+["trancher","Prendre une décision définitive.","Il faut trancher avant vendredi."],
+["pointer","Signaler, attirer l’attention sur.","Elle a pointé un risque que nous avions négligé."],
+["cultiver","Entretenir, développer.","Il cultive un sens aigu de l’écoute."],
+["reléguer","Mettre au second plan.","Ce critère a été relégué au second plan."],
+["cristalliser","Concentrer, donner une forme nette.","Ce débat cristallise toutes les tensions."],
+["amorcer","Commencer, engager.","Nous amorçons une phase de transition."],
+["exhaustif","Qui n’omet rien.","Cette liste n’est pas exhaustive."],
+["pragmatique","Orienté vers l’efficacité concrète.","Adoptons une approche pragmatique."],
+["cohérent","Dont les éléments s’accordent logiquement.","Le projet est cohérent avec nos objectifs."],
+["judicieux","Qui fait preuve de bon sens.","C’est un choix judicieux."],
+["incontournable","Qu’on ne peut éviter.","Cet outil est devenu incontournable."],
+["pérenne","Qui dure dans le temps.","Il nous faut une solution pérenne."],
+["transversal","Qui traverse plusieurs domaines.","C’est une compétence transversale."],
+["récurrent","Qui revient régulièrement.","Le problème est récurrent depuis septembre."],
+["ambigu","Qui peut s’interpréter de plusieurs façons.","La consigne reste ambiguë."],
+["fastidieux","Long et ennuyeux.","La saisie manuelle est fastidieuse."],
+["probant","Qui convainc, qui démontre.","Les résultats sont probants."],
+["inéluctable","Qu’on ne peut empêcher.","Cette évolution paraît inéluctable."],
+["pléthorique","Trop abondant.","Le nombre de candidatures est pléthorique."],
+["lacunaire","Qui comporte des manques.","Le dossier est encore lacunaire."],
+["fallacieux","Trompeur, qui cherche à induire en erreur.","Cet argument est fallacieux."],
+["consensuel","Qui rallie le plus grand nombre.","La solution retenue est consensuelle."],
+["éloquent","Qui en dit long par lui-même.","Ces chiffres sont éloquents."],
+["perfectible","Qui peut être amélioré.","Le dispositif est perfectible."],
+["notable","Digne d’être remarqué.","On observe une progression notable."],
+["rigoureux","Précis et exigeant.","Une analyse rigoureuse s’impose."],
+["anodin","Sans gravité ni importance.","Cette remarque n’est pas anodine."],
+["prépondérant","Qui a le plus d’importance.","Son rôle a été prépondérant."],
+["tangible","Concret, perceptible.","Nous attendons des résultats tangibles."],
+["hétérogène","Composé d’éléments différents.","Le groupe est très hétérogène."],
+["fiable","Auquel on peut se fier.","Cette source est fiable."],
+["enjeu","Ce qu’on peut gagner ou perdre.","L’enjeu est de maintenir la qualité."],
+["levier","Moyen d’action efficace.","La formation est un levier majeur."],
+["axe","Direction principale de travail.","Voici les trois axes de notre réflexion."],
+["démarche","Manière de procéder.","Cette démarche me paraît cohérente."],
+["prérequis","Condition préalable.","La maîtrise de l’outil est un prérequis."],
+["écueil","Difficulté ou danger à éviter.","Le premier écueil est le manque de temps."],
+["corollaire","Conséquence naturelle.","Cette hausse a pour corollaire une charge accrue."],
+["paradoxe","Situation qui semble contradictoire.","C’est un paradoxe : plus on simplifie, plus on ajoute d’étapes."],
+["clivage","Division nette entre des positions.","Un clivage persiste entre les deux équipes."],
+["conjoncture","Ensemble des circonstances du moment.","Dans la conjoncture actuelle, la prudence s’impose."],
+["corpus","Ensemble de documents étudiés.","Nous avons analysé un corpus de vingt textes."],
+["préalable","Condition ou étape qui vient d’abord.","Un échange est un préalable indispensable."],
+["incidence","Effet, répercussion.","Cette mesure a une incidence directe sur le budget."],
+["jalon","Étape repère d’un projet.","Le premier jalon est fixé à mars."],
+["carence","Manque, insuffisance.","On constate une carence de communication."],
+["atout","Avantage, point fort.","Son expérience est un atout précieux."],
+["périmètre","Étendue et limites d’un sujet ou d’un projet.","Précisons le périmètre de l’étude."],
+["dispositif","Ensemble de moyens organisés dans un but précis.","Un dispositif d’accompagnement sera mis en place."],
+["synergie","Effet positif de la collaboration.","Ce rapprochement crée des synergies."],
+["postulat","Principe posé comme point de départ.","Partons du postulat que le budget est fixe."],
+["en l’occurrence","Dans le cas précis dont on parle.","Un point faible, en l’occurrence la logistique."],
+["de surcroît","En outre, de plus.","Il est compétent et, de surcroît, disponible."],
+["néanmoins","Pourtant, malgré cela.","Le coût est élevé ; néanmoins, le gain est réel."],
+["d’autant que","Surtout parce que.","Je suis favorable, d’autant que le délai est tenu."],
+["en l’espèce","Dans le cas présent (registre formel).","En l’espèce, aucune règle ne l’interdit."],
+["au demeurant","D’ailleurs, du reste.","Le projet est solide et, au demeurant, bien financé."],
+["sous réserve de","À condition que.","Nous validons, sous réserve de l’accord de la direction."],
+["eu égard à","En tenant compte de.","Eu égard à l’urgence, nous avançons la date."],
+["à cet égard","Sur ce point précis.","À cet égard, vos remarques sont précieuses."],
+["en filigrane","De manière implicite.","On lit en filigrane une inquiétude."],
+["à tout le moins","En tout cas, au minimum.","Il faut à tout le moins prévenir les familles."],
+["en amont","Avant, au début d’un processus.","Il faut agir en amont."],
+["en aval","Après, à la fin d’un processus.","Les effets se font sentir en aval."],
+["à l’échelle de","Au niveau de.","Le projet se déploie à l’échelle de l’établissement."],
+["par ailleurs","En outre, d’un autre côté.","Par ailleurs, un budget est prévu."],
+["dès lors","À partir de là, par conséquent.","Dès lors, la question se pose autrement."],
+["quant à","En ce qui concerne.","Quant au calendrier, il reste à fixer."],
+["en dépit de","Malgré.","En dépit des retards, le projet avance."],
+["faire état de","Mentionner officiellement.","Le rapport fait état de plusieurs anomalies."],
+["être en adéquation avec","Correspondre parfaitement à.","Cette offre est en adéquation avec nos besoins."],
+["à l’aune de","En prenant pour mesure, pour critère.","Jugeons ce projet à l’aune de ses résultats."],
+["en somme","Pour résumer.","En somme, l’idée est simple."],
+["tenir lieu de","Remplacer, servir de.","Ce document tient lieu de justificatif."],
+["sans conteste","Sans aucun doute.","C’est sans conteste la meilleure option."],
+["au même titre que","De la même façon que.","Le suivi compte, au même titre que la préparation."]
+];
+function today(){return Math.floor((Date.now()-new Date().getTimezoneOffset()*6e4)/864e5)}
+function load(){try{var r=JSON.parse(localStorage.getItem(KEY)||"[]");if(Array.isArray(r))cards=r}catch(e){cards=[]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cards))}catch(e){}}
+function h(t,a,c){var e=document.createElement(t);for(var k in a){if(k==="class")e.className=a[k];else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),a[k]);else e.setAttribute(k,a[k])}(c||[]).forEach(function(x){e.appendChild(typeof x==="string"?document.createTextNode(x):x)});return e}
+function mk(w,d,e){return{id:Date.now()+Math.random(),w:w,d:d,e:e,box:0,due:today()}}
+function dueList(){var t=today();return cards.filter(function(c){return c.due<=t}).sort(function(a,b){return a.due-b.due})}
+function go(t){tab=t;flip=false;msg="";render()}
+function addStart(){addList(START)}
+function addList(L){var have={};cards.forEach(function(c){have[c.w]=1});var n=0;L.forEach(function(s){if(!have[s[0]]){cards.push(mk(s[0],s[1],s[2]));n++}});save();msg=n+" cartes ajoutées.";render()}
+function answer(c,ok){if(ok){c.box=Math.min(c.box+1,4);c.due=today()+INT[c.box]}else{c.box=0;c.due=today();cards.splice(cards.indexOf(c),1);cards.push(c)}save();flip=false;render()}
+function render(){
+ var t=document.getElementById("tabs");t.textContent="";
+ [["rev","Réviser"],["add","Ajouter"],["list","Mes mots"]].forEach(function(x){t.appendChild(h("button",{type:"button","aria-pressed":String(tab===x[0]),onclick:function(){go(x[0])}},[x[1]]))});
+ var d=dueList().length,m=cards.filter(function(c){return c.box>=4}).length;
+ var s=document.getElementById("stats");s.textContent="";
+ [["Mots",cards.length],["À réviser",d],["Bien acquis",m]].forEach(function(x){s.appendChild(h("span",{},[x[0]+" : ",h("b",{},[String(x[1])])]))});
+ var a=document.getElementById("app");a.textContent="";
+ if(tab==="rev")rev(a);else if(tab==="add")add(a);else list(a);
+}
+function rev(a){
+ var q=dueList();
+ if(!cards.length){a.appendChild(h("div",{class:"card"},[h("p",{class:"def"},["Aucune carte pour l’instant."]),h("div",{class:"row"},[h("button",{class:"btn p",type:"button",onclick:addStart},["Charger 10 mots de départ"]),h("button",{class:"btn",type:"button",onclick:function(){go("add")}},["Ajouter mes mots"])])]));return}
+ if(!q.length){a.appendChild(h("div",{class:"card"},[h("p",{class:"word"},["Terminé pour aujourd’hui"]),h("p",{class:"mu"},["Reviens demain, ou ajoute de nouveaux mots."])]));return}
+ var c=q[0],box=[h("p",{class:"word"},[c.w])];
+ if(!flip){
+  box.push(h("p",{class:"mu"},["Dis ce mot dans une phrase à voix haute, puis retourne la carte."]));
+  a.appendChild(h("div",{class:"card"},box));
+  a.appendChild(h("div",{class:"row"},[h("button",{class:"btn p",type:"button",onclick:function(){flip=true;render()}},["Retourner la carte"])]));
+ }else{
+  if(c.d)box.push(h("p",{class:"def"},[c.d]));
+  if(c.e)box.push(h("p",{class:"ex"},["« "+c.e+" »"]));
+  a.appendChild(h("div",{class:"card"},box));
+  a.appendChild(h("div",{class:"row"},[h("button",{class:"btn ko",type:"button",onclick:function(){answer(c,false)}},["Je ne savais pas"]),h("button",{class:"btn ok",type:"button",onclick:function(){answer(c,true)}},["Je savais"])]));
+ }
+ if(msg)a.appendChild(h("p",{class:"msg"},[msg]));
+}
+function add(a){
+ var w=h("input",{id:"w",type:"text",autocomplete:"off"}),d=h("input",{id:"d",type:"text"}),e=h("textarea",{id:"e",rows:"2"});
+ a.appendChild(h("label",{"for":"w"},["Mot ou expression"]));a.appendChild(w);
+ a.appendChild(h("label",{"for":"d"},["Définition (dans tes mots)"]));a.appendChild(d);
+ a.appendChild(h("label",{"for":"e"},["Phrase d’exemple"]));a.appendChild(e);
+ a.appendChild(h("p",{},[h("button",{class:"btn p",type:"button",onclick:function(){
+  var v=w.value.trim();if(!v){msg="Saisis d’abord un mot.";render();return}
+  cards.push(mk(v,d.value.trim(),e.value.trim()));save();msg="« "+v+" » ajouté.";render()}},["Ajouter la carte"])]));
+ a.appendChild(h("p",{class:"msg"},[msg]));
+ a.appendChild(h("p",{class:"mu"},["Astuce : écris une phrase que tu pourrais réellement dire en réunion."]));
+ a.appendChild(h("p",{class:"row"},[h("button",{class:"btn",type:"button",onclick:addStart},["Ajouter les 10 mots de départ"]),h("button",{class:"btn p",type:"button",onclick:function(){addList(BIG)}},["Ajouter 100 mots"])]));
+}
+function list(a){
+ if(!cards.length)a.appendChild(h("p",{class:"mu"},["Aucun mot enregistré."]));
+ cards.forEach(function(c){
+  a.appendChild(h("div",{class:"item"},[h("div",{},[h("strong",{},[c.w]),h("small",{},["Niveau "+(c.box+1)+"/5"])]),
+   h("button",{class:"btn",type:"button","aria-label":"Supprimer "+c.w,onclick:function(){cards.splice(cards.indexOf(c),1);save();render()}},["Supprimer"])]));
+ });
+ var sec=h("div",{class:"sec"},[h("label",{"for":"x"},["Sauvegarde (copier ou coller pour changer d’appareil)"])]);
+ var ta=h("textarea",{id:"x",rows:"4"});ta.value=JSON.stringify(cards);
+ sec.appendChild(ta);
+ sec.appendChild(h("p",{class:"row"},[
+  h("button",{class:"btn",type:"button",onclick:function(){ta.select();try{navigator.clipboard.writeText(ta.value)}catch(e){}}},["Copier"]),
+  h("button",{class:"btn p",type:"button",onclick:function(){try{var r=JSON.parse(ta.value);if(!Array.isArray(r))throw 0;cards=r;save();msg="Sauvegarde importée.";render()}catch(e){msg="Contenu invalide.";render()}}},["Importer"])]));
+ sec.appendChild(h("p",{class:"msg"},[msg]));
+ a.appendChild(sec);
+}
+load();render();
+</script>
+</body>
+</html>
